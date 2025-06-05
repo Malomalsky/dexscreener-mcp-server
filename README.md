@@ -120,6 +120,13 @@ python -c "from dexscreener_mcp.server import DexScreenerMCPServer; print('✅ S
 
 ### Integration with Applications
 
+⚠️ **MCP Support Status:**
+- ✅ **Claude Desktop**: Full native support
+- 🧪 **Cursor IDE**: Experimental/limited support  
+- 🧪 **Zed Editor**: Experimental support
+- 🧪 **VS Code**: Requires MCP extension
+- ❓ **Continue.dev**: Support may vary
+
 <details>
 <summary><strong>Claude Desktop</strong></summary>
 
@@ -146,13 +153,13 @@ Add to your `claude_desktop_config.json`:
 <details>
 <summary><strong>Cursor IDE</strong></summary>
 
-1. Install the MCP extension in Cursor
-2. Add server configuration in Cursor settings:
+1. **Install MCP support** in Cursor (if available)
+2. **Add server configuration** in Cursor settings (`settings.json`):
 
-**Option 1 (Recommended):**
+**Option 1 (Recommended - Claude Desktop format):**
 ```json
 {
-  "mcp.servers": {
+  "mcpServers": {
     "dexscreener": {
       "command": "python",
       "args": ["-m", "dexscreener_mcp.server"],
@@ -162,10 +169,24 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-**Option 2 (Full path):**
+**Option 2 (Alternative format):**
 ```json
 {
-  "mcp.servers": {
+  "mcp": {
+    "servers": {
+      "dexscreener": {
+        "command": "python",
+        "args": ["-m", "dexscreener_mcp.server"]
+      }
+    }
+  }
+}
+```
+
+**Option 3 (Full Python path for Windows):**
+```json
+{
+  "mcpServers": {
     "dexscreener": {
       "command": "C:\\Users\\YourUser\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
       "args": ["-m", "dexscreener_mcp.server"],
@@ -175,36 +196,39 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-**Option 3 (Direct script):**
-```json
-{
-  "mcp.servers": {
-    "dexscreener": {
-      "command": "dexscreener-mcp",
-      "env": {}
-    }
-  }
-}
-```
+3. **Configuration Location:**
+   - **Windows**: `%APPDATA%\Cursor\User\settings.json`
+   - **macOS**: `~/Library/Application Support/Cursor/User/settings.json`
+   - **Linux**: `~/.config/Cursor/User/settings.json`
 
-3. **Troubleshooting:**
-   - Check Cursor's output panel for MCP server logs
-   - Verify Python is in PATH: `python --version`
-   - Test server manually: `python -m dexscreener_mcp.server`
+4. **Troubleshooting:**
    - Restart Cursor after configuration changes
+   - Check Cursor's output panel for MCP server logs
+   - Verify Python installation: `python --version`
+   - Test server manually: `python -m dexscreener_mcp.server`
+   - Ensure the package is installed: `python -c "import dexscreener_mcp; print('✅ OK')"`
 
-4. The server will show "⏳ Waiting for MCP client connection..." when working correctly
+5. **Expected behavior:** Server will show "⏳ Waiting for MCP client connection..." when working correctly
+
+**Note**: MCP support in Cursor may be experimental. If none of these work, MCP might not be fully supported yet.
 
 </details>
 
 <details>
 <summary><strong>Zed Editor</strong></summary>
 
-In your Zed `settings.json`:
+**Add to Zed settings** (`~/.config/zed/settings.json`):
 
 ```json
 {
   "assistant": {
+    "version": "2",
+    "provider": {
+      "name": "openai",
+      "api_url": "https://api.openai.com/v1"
+    }
+  },
+  "experimental": {
     "mcp_servers": {
       "dexscreener": {
         "command": "python",
@@ -215,15 +239,32 @@ In your Zed `settings.json`:
 }
 ```
 
+**Alternative format:**
+```json
+{
+  "mcp": {
+    "servers": {
+      "dexscreener": {
+        "command": "python",
+        "args": ["-m", "dexscreener_mcp.server"]
+      }
+    }
+  }
+}
+```
+
+**Note**: MCP support in Zed is experimental and may require specific Zed versions.
+
 </details>
 
 <details>
 <summary><strong>Continue.dev</strong></summary>
 
-Add to your Continue configuration:
+**Add to Continue configuration** (`~/.continue/config.json`):
 
 ```json
 {
+  "models": [...],
   "mcpServers": {
     "dexscreener": {
       "command": "python",
@@ -233,24 +274,59 @@ Add to your Continue configuration:
 }
 ```
 
+**Alternative format:**
+```json
+{
+  "models": [...],
+  "mcp": {
+    "servers": {
+      "dexscreener": {
+        "command": "python",
+        "args": ["-m", "dexscreener_mcp.server"]
+      }
+    }
+  }
+}
+```
+
+**Note**: MCP support in Continue.dev may vary by version.
+
 </details>
 
 <details>
 <summary><strong>VS Code</strong></summary>
 
-1. Install MCP extension for VS Code
-2. Add to workspace settings (`.vscode/settings.json`):
+1. **Install MCP extension** for VS Code (if available)
+2. **Add to workspace settings** (`.vscode/settings.json`):
 
+**Option 1:**
 ```json
 {
-  "mcp.servers": {
+  "mcpServers": {
     "dexscreener": {
       "command": "python",
-      "args": ["-m", "dexscreener_mcp.server"]
+      "args": ["-m", "dexscreener_mcp.server"],
+      "env": {}
     }
   }
 }
 ```
+
+**Option 2:**
+```json
+{
+  "mcp": {
+    "servers": {
+      "dexscreener": {
+        "command": "python",
+        "args": ["-m", "dexscreener_mcp.server"]
+      }
+    }
+  }
+}
+```
+
+**Note**: MCP support in VS Code requires specific extensions and may be limited.
 
 </details>
 
