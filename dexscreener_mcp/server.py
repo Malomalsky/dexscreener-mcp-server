@@ -8,7 +8,7 @@ import os
 from typing import Any, Dict, List, Optional, Sequence
 
 import structlog
-from mcp.server import Server
+from mcp.server import Server, NotificationOptions
 from mcp.server.models import InitializationOptions
 from mcp.server.stdio import stdio_server
 from mcp.types import (
@@ -355,8 +355,8 @@ class DexScreenerMCPServer:
                         server_name="dexscreener-mcp-server",
                         server_version="1.0.0",
                         capabilities=self.server.get_capabilities(
-                            notification_options=None,
-                            experimental_capabilities=None,
+                            notification_options=NotificationOptions(),
+                            experimental_capabilities={},
                         ),
                     ),
                 )
@@ -383,14 +383,23 @@ def main():
         print("   like Claude Desktop, Cursor, Zed, etc.")
         print("   It will wait for MCP protocol messages on stdio.")
         print()
+        print("⏳ Waiting for MCP client connection...")
         asyncio.run(async_main())
     except KeyboardInterrupt:
         print("\n👋 Server interrupted by user")
         logger.info("Server interrupted by user")
+    except EOFError:
+        print("\n💡 No MCP client connected - this is normal when running standalone")
+        print("   Use this server through Claude Desktop, Cursor, or other MCP clients")
     except Exception as e:
-        print(f"❌ Server failed to start: {e}")
-        logger.error("Server failed to start", error=str(e))
-        raise
+        error_msg = str(e)
+        if "stdin" in error_msg.lower() or "stdio" in error_msg.lower():
+            print(f"\n💡 Server stopped (MCP client disconnected)")
+            print("   This is normal - the server runs when MCP clients connect")
+        else:
+            print(f"❌ Server failed to start: {e}")
+            logger.error("Server failed to start", error=str(e))
+            raise
 
 
 if __name__ == "__main__":
