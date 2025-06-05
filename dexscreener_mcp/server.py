@@ -37,10 +37,13 @@ class DexScreenerMCPServer:
         self.server = Server("dexscreener-mcp-server")
         self._setup_handlers()
         
-        # Only log in standalone mode
+        # Only log in standalone mode to avoid MCP stdout pollution
         import sys
-        if sys.stdin.isatty():
-            logger.info("DexScreener MCP Server initialized")
+        try:
+            if sys.stdin.isatty():
+                logger.info("DexScreener MCP Server initialized")
+        except (OSError, ValueError):
+            pass
     
     def _setup_handlers(self):
         """Set up MCP server handlers."""
@@ -151,10 +154,13 @@ class DexScreenerMCPServer:
                     },
                 ),
             ]
-            # Only log in standalone mode to avoid stdout pollution in MCP mode
+            # Only log in standalone mode
             import sys
-            if sys.stdin.isatty():
-                logger.info(f"Returning {len(tools)} tools to MCP client")
+            try:
+                if sys.stdin.isatty():
+                    logger.info(f"Returning {len(tools)} tools to MCP client")
+            except (OSError, ValueError):
+                pass
             return tools
         
         @self.server.call_tool()
@@ -168,7 +174,12 @@ class DexScreenerMCPServer:
                 tool_name = request.params.name
                 arguments = request.params.arguments or {}
                 
-                logger.info("Tool called", tool=tool_name, args=arguments)
+                # Only log in standalone mode
+                try:
+                    if sys.stdin.isatty():
+                        logger.info("Tool called", tool=tool_name, args=arguments)
+                except (OSError, ValueError):
+                    pass
                 
                 # Route to appropriate tool handler
                 if tool_name == "get_token_info":
@@ -188,7 +199,12 @@ class DexScreenerMCPServer:
                 else:
                     raise ValueError(f"Unknown tool: {tool_name}")
                 
-                logger.info("Tool completed successfully", tool=tool_name)
+                # Only log in standalone mode
+                try:
+                    if sys.stdin.isatty():
+                        logger.info("Tool completed successfully", tool=tool_name)
+                except (OSError, ValueError):
+                    pass
                 
                 return CallToolResult(
                     content=[
@@ -204,7 +220,12 @@ class DexScreenerMCPServer:
                 if e.status_code:
                     error_msg += f" (Status: {e.status_code})"
                 
-                logger.error("API error", tool=tool_name, error=error_msg)
+                # Only log in standalone mode
+                try:
+                    if sys.stdin.isatty():
+                        logger.error("API error", tool=tool_name, error=error_msg)
+                except (OSError, ValueError):
+                    pass
                 
                 return CallToolResult(
                     content=[TextContent(type="text", text=error_msg)],
@@ -213,7 +234,12 @@ class DexScreenerMCPServer:
                 
             except ValidationError as e:
                 error_msg = f"Validation Error: {str(e)}"
-                logger.error("Validation error", tool=tool_name, error=error_msg)
+                # Only log in standalone mode
+                try:
+                    if sys.stdin.isatty():
+                        logger.error("Validation error", tool=tool_name, error=error_msg)
+                except (OSError, ValueError):
+                    pass
                 
                 return CallToolResult(
                     content=[TextContent(type="text", text=error_msg)],
@@ -222,7 +248,12 @@ class DexScreenerMCPServer:
                 
             except Exception as e:
                 error_msg = f"Unexpected Error: {str(e)}"
-                logger.error("Unexpected error", tool=tool_name, error=error_msg, exc_info=True)
+                # Only log in standalone mode
+                try:
+                    if sys.stdin.isatty():
+                        logger.error("Unexpected error", tool=tool_name, error=error_msg, exc_info=True)
+                except (OSError, ValueError):
+                    pass
                 
                 return CallToolResult(
                     content=[TextContent(type="text", text=error_msg)],
@@ -344,8 +375,16 @@ class DexScreenerMCPServer:
             # Configure structured logging to stderr only in standalone mode
             import sys
             
+            # Check if we're in MCP mode (stdin is a pipe) or standalone
+            is_mcp_mode = True
+            try:
+                is_mcp_mode = not sys.stdin.isatty()
+            except (OSError, ValueError):
+                # If stdin is closed or unavailable, assume MCP mode
+                is_mcp_mode = True
+            
             # Only configure logging if we're not in MCP mode (stdin is tty = standalone)
-            if sys.stdin.isatty():
+            if not is_mcp_mode:
                 structlog.configure(
                     processors=[
                         structlog.processors.TimeStamper(fmt="iso"),
@@ -376,15 +415,25 @@ class DexScreenerMCPServer:
                     ),
                 )
         except Exception as e:
-            logger.error("Server error", error=str(e), exc_info=True)
+            # Only log in standalone mode
+            try:
+                if sys.stdin.isatty():
+                    logger.error("Server error", error=str(e), exc_info=True)
+            except (OSError, ValueError):
+                pass
             raise
         finally:
             if self.client:
                 await self.client.close()
             # Only log in standalone mode
             import sys
-            if sys.stdin.isatty():
-                logger.info("DexScreener MCP Server stopped")
+            try:
+                if not sys.stdin.isatty():
+                    pass  # MCP mode - no logging
+                else:
+                    logger.info("DexScreener MCP Server stopped")
+            except (OSError, ValueError):
+                pass  # stdin unavailable - assume MCP mode
 
 
 async def async_main():
@@ -399,7 +448,12 @@ def main():
     import os
     
     # Check if we're running in MCP mode (stdin is a pipe) or standalone
-    is_mcp_mode = not sys.stdin.isatty()
+    is_mcp_mode = True
+    try:
+        is_mcp_mode = not sys.stdin.isatty()
+    except (OSError, ValueError):
+        # If stdin is closed or unavailable, assume MCP mode
+        is_mcp_mode = True
     
     if not is_mcp_mode:
         # Only print messages when running standalone (for debugging)
@@ -415,21 +469,27 @@ def main():
     except KeyboardInterrupt:
         if not is_mcp_mode:
             print("\n👋 Server interrupted by user")
-        logger.info("Server interrupted by user")
+        try:
+            logger.info("Server interrupted by user")
+        except:
+            pass
     except EOFError:
         if not is_mcp_mode:
             print("\n💡 No MCP client connected - this is normal when running standalone")
             print("   Use this server through Claude Desktop, Cursor, or other MCP clients")
     except Exception as e:
         error_msg = str(e)
-        if "stdin" in error_msg.lower() or "stdio" in error_msg.lower():
+        if "stdin" in error_msg.lower() or "stdio" in error_msg.lower() or "closed file" in error_msg.lower():
             if not is_mcp_mode:
                 print(f"\n💡 Server stopped (MCP client disconnected)")
                 print("   This is normal - the server runs when MCP clients connect")
         else:
             if not is_mcp_mode:
                 print(f"❌ Server failed to start: {e}")
-            logger.error("Server failed to start", error=str(e))
+            try:
+                logger.error("Server failed to start", error=str(e))
+            except:
+                pass
             raise
 
 

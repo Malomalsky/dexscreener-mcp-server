@@ -29,6 +29,18 @@ from .types import (
     TrendingResponse,
 )
 
+# Check if we're in MCP mode to avoid stdout pollution
+import sys
+try:
+    _is_mcp_mode = not sys.stdin.isatty()
+except (OSError, ValueError):
+    _is_mcp_mode = True
+
+# Disable logging in MCP mode to prevent stdout pollution
+if _is_mcp_mode:
+    import logging
+    logging.disable(logging.CRITICAL)
+
 logger = structlog.get_logger(__name__)
 
 
