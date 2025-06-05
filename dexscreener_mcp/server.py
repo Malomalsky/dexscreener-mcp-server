@@ -369,11 +369,29 @@ class DexScreenerMCPServer:
             logger.info("DexScreener MCP Server stopped")
 
 
-async def main():
-    """Main entry point for the MCP server."""
+async def async_main():
+    """Async main entry point for the MCP server."""
     server = DexScreenerMCPServer()
     await server.run()
 
 
+def main():
+    """Synchronous entry point for the MCP server (used by CLI)."""
+    try:
+        print("🚀 Starting DexScreener MCP Server...")
+        print("💡 This server is designed to run within MCP-enabled applications")
+        print("   like Claude Desktop, Cursor, Zed, etc.")
+        print("   It will wait for MCP protocol messages on stdio.")
+        print()
+        asyncio.run(async_main())
+    except KeyboardInterrupt:
+        print("\n👋 Server interrupted by user")
+        logger.info("Server interrupted by user")
+    except Exception as e:
+        print(f"❌ Server failed to start: {e}")
+        logger.error("Server failed to start", error=str(e))
+        raise
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

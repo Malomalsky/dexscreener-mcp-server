@@ -105,18 +105,18 @@ nano .env
 
 ### Running the Server
 
+⚠️ **Important**: This is an MCP (Model Context Protocol) server designed to run within MCP-enabled applications. It cannot be used standalone.
+
 ```bash
-# Start the MCP server (if ~/.local/bin is in PATH)
-dexscreener-mcp
+# Test the server installation
+python -c "from dexscreener_mcp.server import DexScreenerMCPServer; print('✅ Server ready!')"
 
-# Or use full path
-~/.local/bin/dexscreener-mcp
-
-# Or run directly with Python
-python -m dexscreener_mcp.server
+# The server will be automatically started by MCP clients
+# Do NOT run these commands directly unless testing:
+# python -m dexscreener_mcp.server  # Will wait for MCP protocol input
 ```
 
-**Note**: If you see "command not found", the script is installed in `~/.local/bin/`. Add this to your PATH or use the full path as shown above.
+**How it works**: MCP applications (Claude Desktop, Cursor, etc.) will automatically start and communicate with this server using the stdio protocol.
 
 ### Integration with Applications
 
