@@ -47,6 +47,9 @@ dev = [
 [project.scripts]
 dexscreener-mcp = "dexscreener_mcp.server:main"
 
+[tool.hatch.build.targets.wheel]
+packages = ["dexscreener_mcp"]
+
 [tool.black]
 line-length = 88
 target-version = ['py39']
