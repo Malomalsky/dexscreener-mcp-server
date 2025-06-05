@@ -64,7 +64,7 @@
 
 ```bash
 # 1️⃣ Clone the repository
-git clone https://github.com/yourusername/dexscreener-mcp-server.git
+git clone https://github.com/Malomalsky/dexscreener-mcp-server.git
 cd dexscreener-mcp-server
 
 # 2️⃣ Install with pip
@@ -94,9 +94,12 @@ dexscreener-mcp
 python -m dexscreener_mcp.server
 ```
 
-### 🎮 Using with Claude Desktop
+### 🎮 Integration with Applications
 
-Add to your Claude Desktop `claude_desktop_config.json`:
+<details>
+<summary><strong>🤖 Claude Desktop</strong></summary>
+
+Add to your `claude_desktop_config.json`:
 
 ```json
 {
@@ -109,13 +112,137 @@ Add to your Claude Desktop `claude_desktop_config.json`:
 }
 ```
 
-### 💡 Example Usage
+**Config file locations:**
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
+
+</details>
+
+<details>
+<summary><strong>🎯 Cursor IDE</strong></summary>
+
+1. **Install the MCP extension** in Cursor
+2. **Add server configuration** in Cursor settings:
+
+```json
+{
+  "mcp.servers": {
+    "dexscreener": {
+      "command": "dexscreener-mcp",
+      "args": [],
+      "env": {}
+    }
+  }
+}
+```
+
+3. **Restart Cursor** and the server will be available in the MCP panel
+
+</details>
+
+<details>
+<summary><strong>🚀 Zed Editor</strong></summary>
+
+In your Zed `settings.json`:
+
+```json
+{
+  "assistant": {
+    "mcp_servers": {
+      "dexscreener": {
+        "command": "dexscreener-mcp"
+      }
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><strong>⚡ Continue.dev</strong></summary>
+
+Add to your Continue configuration:
+
+```json
+{
+  "mcpServers": {
+    "dexscreener": {
+      "command": "dexscreener-mcp",
+      "args": []
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><strong>💻 VS Code</strong></summary>
+
+1. **Install MCP extension** for VS Code
+2. **Add to workspace settings** (`.vscode/settings.json`):
+
+```json
+{
+  "mcp.servers": {
+    "dexscreener": {
+      "command": "dexscreener-mcp"
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><strong>☁️ GitHub Codespaces</strong></summary>
+
+Works out of the box! Just install the package:
+
+```bash
+pip install -e .
+```
+
+Then use with any MCP-enabled extension in Codespaces.
+
+</details>
+
+<details>
+<summary><strong>🛠️ Custom MCP Client</strong></summary>
+
+For custom implementations, use the MCP SDK:
 
 ```python
-# Through Claude or any MCP client:
-# "Get token information for USDC"
-# "Search for trending Ethereum pairs" 
-# "Find information about Uniswap V3 WETH/USDC pair"
+from mcp import ClientSession
+import asyncio
+
+async def main():
+    async with ClientSession("dexscreener-mcp") as session:
+        # List available tools
+        tools = await session.list_tools()
+        
+        # Call a tool
+        result = await session.call_tool(
+            "search_tokens", 
+            {"query": "USDC", "limit": 10}
+        )
+        print(result)
+
+asyncio.run(main())
+```
+
+</details>
+
+### 💡 Example Usage
+
+```bash
+# Through any MCP-enabled application:
+"Get token information for USDC"
+"Search for trending Ethereum pairs" 
+"Find information about Uniswap V3 WETH/USDC pair"
+"Show me the top 5 trending pairs on Base network"
+"What's the current price and volume for PEPE token?"
 ```
 
 ## 🛠️ Available Tools
@@ -539,8 +666,8 @@ We welcome contributions! Here's how to get started:
 
 ## 🔗 Useful Links
 
-- 🐛 **[Report Bugs](https://github.com/yourusername/dexscreener-mcp-server/issues)**
-- 💡 **[Request Features](https://github.com/yourusername/dexscreener-mcp-server/discussions)**  
+- 🐛 **[Report Bugs](https://github.com/Malomalsky/dexscreener-mcp-server/issues)**
+- 💡 **[Request Features](https://github.com/Malomalsky/dexscreener-mcp-server/discussions)**  
 - 📖 **[MCP Documentation](https://modelcontextprotocol.io/docs)**
 - 🌐 **[DexScreener API](https://docs.dexscreener.com/)**
 
