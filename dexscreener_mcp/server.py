@@ -45,7 +45,7 @@ class DexScreenerMCPServer:
         @self.server.list_tools()
         async def list_tools() -> List[Tool]:
             """List available DexScreener tools."""
-            return [
+            tools = [
                 Tool(
                     name="get_token_info",
                     description="Get comprehensive token information and trading pairs",
@@ -148,6 +148,8 @@ class DexScreenerMCPServer:
                     },
                 ),
             ]
+            logger.info(f"Returning {len(tools)} tools to MCP client")
+            return tools
         
         @self.server.call_tool()
         async def call_tool(request: CallToolRequest) -> CallToolResult:

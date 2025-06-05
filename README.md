@@ -149,6 +149,7 @@ Add to your `claude_desktop_config.json`:
 1. Install the MCP extension in Cursor
 2. Add server configuration in Cursor settings:
 
+**Option 1 (Recommended):**
 ```json
 {
   "mcp.servers": {
@@ -161,7 +162,38 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-3. Restart Cursor and the server will be available in the MCP panel
+**Option 2 (Full path):**
+```json
+{
+  "mcp.servers": {
+    "dexscreener": {
+      "command": "C:\\Users\\YourUser\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+      "args": ["-m", "dexscreener_mcp.server"],
+      "env": {}
+    }
+  }
+}
+```
+
+**Option 3 (Direct script):**
+```json
+{
+  "mcp.servers": {
+    "dexscreener": {
+      "command": "dexscreener-mcp",
+      "env": {}
+    }
+  }
+}
+```
+
+3. **Troubleshooting:**
+   - Check Cursor's output panel for MCP server logs
+   - Verify Python is in PATH: `python --version`
+   - Test server manually: `python -m dexscreener_mcp.server`
+   - Restart Cursor after configuration changes
+
+4. The server will show "⏳ Waiting for MCP client connection..." when working correctly
 
 </details>
 
