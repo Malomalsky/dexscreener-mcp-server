@@ -63,11 +63,34 @@
 git clone https://github.com/Malomalsky/dexscreener-mcp-server.git
 cd dexscreener-mcp-server
 
-# Install with pip
+# Standard installation
 pip install -e .
 
 # For development
 pip install -e ".[dev]"
+
+# If you have FastAPI compatibility issues
+pip install -e ".[fastapi-compat]"
+```
+
+### Dependency Conflicts
+
+If you encounter dependency conflicts with FastAPI or other packages:
+
+```bash
+# Option 1: Use virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -e .
+
+# Option 2: Force installation (may cause issues)
+pip install -e . --force-reinstall
+
+# Option 3: Use compatibility mode
+pip install -e ".[fastapi-compat]"
+
+# Option 4: Standalone minimal installation
+python standalone_install.py
 ```
 
 ### Configuration
