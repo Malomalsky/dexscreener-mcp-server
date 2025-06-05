@@ -37,7 +37,10 @@ class DexScreenerMCPServer:
         self.server = Server("dexscreener-mcp-server")
         self._setup_handlers()
         
-        logger.info("DexScreener MCP Server initialized")
+        # Only log in standalone mode
+        import sys
+        if sys.stdin.isatty():
+            logger.info("DexScreener MCP Server initialized")
     
     def _setup_handlers(self):
         """Set up MCP server handlers."""
@@ -148,7 +151,10 @@ class DexScreenerMCPServer:
                     },
                 ),
             ]
-            logger.info(f"Returning {len(tools)} tools to MCP client")
+            # Only log in standalone mode to avoid stdout pollution in MCP mode
+            import sys
+            if sys.stdin.isatty():
+                logger.info(f"Returning {len(tools)} tools to MCP client")
             return tools
         
         @self.server.call_tool()
@@ -335,19 +341,26 @@ class DexScreenerMCPServer:
     async def run(self):
         """Run the MCP server."""
         try:
-            # Configure structured logging
-            structlog.configure(
-                processors=[
-                    structlog.processors.TimeStamper(fmt="iso"),
-                    structlog.processors.add_log_level,
-                    structlog.processors.JSONRenderer(),
-                ],
-                logger_factory=structlog.WriteLoggerFactory(),
-                wrapper_class=structlog.BoundLogger,
-                cache_logger_on_first_use=True,
-            )
+            # Configure structured logging to stderr only in standalone mode
+            import sys
             
-            logger.info("Starting DexScreener MCP Server")
+            # Only configure logging if we're not in MCP mode (stdin is tty = standalone)
+            if sys.stdin.isatty():
+                structlog.configure(
+                    processors=[
+                        structlog.processors.TimeStamper(fmt="iso"),
+                        structlog.processors.add_log_level,
+                        structlog.processors.JSONRenderer(),
+                    ],
+                    logger_factory=structlog.WriteLoggerFactory(file=sys.stderr),
+                    wrapper_class=structlog.BoundLogger,
+                    cache_logger_on_first_use=True,
+                )
+                logger.info("Starting DexScreener MCP Server")
+            else:
+                # In MCP mode, disable all logging to avoid stdout pollution
+                import logging
+                logging.disable(logging.CRITICAL)
             
             async with stdio_server() as (read_stream, write_stream):
                 await self.server.run(
@@ -368,7 +381,10 @@ class DexScreenerMCPServer:
         finally:
             if self.client:
                 await self.client.close()
-            logger.info("DexScreener MCP Server stopped")
+            # Only log in standalone mode
+            import sys
+            if sys.stdin.isatty():
+                logger.info("DexScreener MCP Server stopped")
 
 
 async def async_main():
@@ -379,27 +395,40 @@ async def async_main():
 
 def main():
     """Synchronous entry point for the MCP server (used by CLI)."""
-    try:
+    import sys
+    import os
+    
+    # Check if we're running in MCP mode (stdin is a pipe) or standalone
+    is_mcp_mode = not sys.stdin.isatty()
+    
+    if not is_mcp_mode:
+        # Only print messages when running standalone (for debugging)
         print("🚀 Starting DexScreener MCP Server...")
         print("💡 This server is designed to run within MCP-enabled applications")
         print("   like Claude Desktop, Cursor, Zed, etc.")
         print("   It will wait for MCP protocol messages on stdio.")
         print()
         print("⏳ Waiting for MCP client connection...")
+    
+    try:
         asyncio.run(async_main())
     except KeyboardInterrupt:
-        print("\n👋 Server interrupted by user")
+        if not is_mcp_mode:
+            print("\n👋 Server interrupted by user")
         logger.info("Server interrupted by user")
     except EOFError:
-        print("\n💡 No MCP client connected - this is normal when running standalone")
-        print("   Use this server through Claude Desktop, Cursor, or other MCP clients")
+        if not is_mcp_mode:
+            print("\n💡 No MCP client connected - this is normal when running standalone")
+            print("   Use this server through Claude Desktop, Cursor, or other MCP clients")
     except Exception as e:
         error_msg = str(e)
         if "stdin" in error_msg.lower() or "stdio" in error_msg.lower():
-            print(f"\n💡 Server stopped (MCP client disconnected)")
-            print("   This is normal - the server runs when MCP clients connect")
+            if not is_mcp_mode:
+                print(f"\n💡 Server stopped (MCP client disconnected)")
+                print("   This is normal - the server runs when MCP clients connect")
         else:
-            print(f"❌ Server failed to start: {e}")
+            if not is_mcp_mode:
+                print(f"❌ Server failed to start: {e}")
             logger.error("Server failed to start", error=str(e))
             raise
 
