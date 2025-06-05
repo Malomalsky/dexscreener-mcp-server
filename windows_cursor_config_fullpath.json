@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "dexscreener": {
+      "command": "C:\\Users\\apgre\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+      "args": ["-m", "dexscreener_mcp.server"],
+      "env": {}
+    }
+  }
+}

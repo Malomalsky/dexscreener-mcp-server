@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "dexscreener": {
+      "command": "/usr/bin/python3",
+      "args": [
+        "-m",
+        "dexscreener_mcp.server"
+      ],
+      "env": {}
+    }
+  }
+}

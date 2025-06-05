@@ -202,11 +202,17 @@ Add to your `claude_desktop_config.json`:
    - **Linux**: `~/.config/Cursor/User/settings.json`
 
 4. **Troubleshooting:**
-   - Restart Cursor after configuration changes
-   - Check Cursor's output panel for MCP server logs
-   - Verify Python installation: `python --version`
-   - Test server manually: `python -m dexscreener_mcp.server`
-   - Ensure the package is installed: `python -c "import dexscreener_mcp; print('✅ OK')"`
+   - **Step 1**: Verify installation: `python -c "import dexscreener_mcp; print('✅ OK')"`
+   - **Step 2**: Test server manually: `python -m dexscreener_mcp.server`
+   - **Step 3**: Add configuration to Cursor settings.json
+   - **Step 4**: **Completely restart Cursor** (important!)
+   - **Step 5**: Check Cursor's Output panel → MCP for error messages
+   - **Step 6**: Look for "dexscreener" in Cursor's MCP server list
+   
+   **If "0 tools enabled":**
+   - Use absolute Python path in config (see Option 3)
+   - Check if Python is in PATH: `python --version`
+   - Try running debug script: `python debug_cursor.py`
 
 5. **Expected behavior:** Server will show "⏳ Waiting for MCP client connection..." when working correctly
 
