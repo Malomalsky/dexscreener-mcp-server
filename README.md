@@ -83,12 +83,17 @@ nano .env
 ### Running the Server
 
 ```bash
-# Start the MCP server
+# Start the MCP server (if ~/.local/bin is in PATH)
 dexscreener-mcp
+
+# Or use full path
+~/.local/bin/dexscreener-mcp
 
 # Or run directly with Python
 python -m dexscreener_mcp.server
 ```
+
+**Note**: If you see "command not found", the script is installed in `~/.local/bin/`. Add this to your PATH or use the full path as shown above.
 
 ### Integration with Applications
 
@@ -101,7 +106,8 @@ Add to your `claude_desktop_config.json`:
 {
   "mcpServers": {
     "dexscreener": {
-      "command": "dexscreener-mcp",
+      "command": "python",
+      "args": ["-m", "dexscreener_mcp.server"],
       "env": {}
     }
   }
@@ -124,8 +130,8 @@ Add to your `claude_desktop_config.json`:
 {
   "mcp.servers": {
     "dexscreener": {
-      "command": "dexscreener-mcp",
-      "args": [],
+      "command": "python",
+      "args": ["-m", "dexscreener_mcp.server"],
       "env": {}
     }
   }
@@ -146,7 +152,8 @@ In your Zed `settings.json`:
   "assistant": {
     "mcp_servers": {
       "dexscreener": {
-        "command": "dexscreener-mcp"
+        "command": "python",
+        "args": ["-m", "dexscreener_mcp.server"]
       }
     }
   }
@@ -164,8 +171,8 @@ Add to your Continue configuration:
 {
   "mcpServers": {
     "dexscreener": {
-      "command": "dexscreener-mcp",
-      "args": []
+      "command": "python",
+      "args": ["-m", "dexscreener_mcp.server"]
     }
   }
 }
@@ -183,7 +190,8 @@ Add to your Continue configuration:
 {
   "mcp.servers": {
     "dexscreener": {
-      "command": "dexscreener-mcp"
+      "command": "python",
+      "args": ["-m", "dexscreener_mcp.server"]
     }
   }
 }
